@@ -55,8 +55,6 @@ func main() {
 		},
 	}
 
-	var context = telepath.NewContext()
-
 	var ctx = telepath.NewContext()
 	var result, err = ctx.Pack(value)
 	if err != nil {
