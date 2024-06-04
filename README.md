@@ -45,32 +45,32 @@ type Artist struct {
 }
 
 func main() {
-    telepath.Register(AlbumAdapter, &Album{})
-    telepath.Register(ArtistAdapter, &Artist{})
+	telepath.Register(AlbumAdapter, &Album{})
+	telepath.Register(ArtistAdapter, &Artist{})
 
-    album := &Album{
-        Name: "The Dark Side of the Moon",
-        Artists: []*Artist{
-            &Artist{Name: "Pink Floyd"},
-        },
-    }
+	album := &Album{
+		Name: "The Dark Side of the Moon",
+		Artists: []*Artist{
+			&Artist{Name: "Pink Floyd"},
+		},
+	}
 
-    var context = telepath.NewContext()
+	var context = telepath.NewContext()
 
 	var ctx = telepath.NewContext()
 	var result, err = ctx.Pack(value)
 	if err != nil {
-        log.Fatal(err)
-    }
+		log.Fatal(err)
+	}
 
-    b, err := json.Marshal(result)
-    if err != nil {
-        log.Fatal(err)
-    }
-    var telepathJSON = string(b)
+	b, err := json.Marshal(result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var telepathJSON = string(b)
 
-    // Pass to JS somehow...
-    // ...
+	// Pass to JS somehow...
+	// ...
 }
 ```
 
