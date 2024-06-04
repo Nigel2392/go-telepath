@@ -11,19 +11,17 @@ import (
 	"github.com/dop251/goja"
 )
 
-var AlbumAdapter = &telepath.ObjectAdapter{
+var AlbumAdapter = &telepath.ObjectAdapter[*Album]{
 	JSConstructor: "js.funcs.Album",
-	GetJSArgs: func(obj interface{}) []interface{} {
-		album := obj.(*Album)
-		return []interface{}{album.Name, album.Artists}
+	GetJSArgs: func(obj *Album) []interface{} {
+		return []interface{}{obj.Name, obj.Artists}
 	},
 }
 
-var ArtistAdapter = &telepath.ObjectAdapter{
+var ArtistAdapter = &telepath.ObjectAdapter[*Artist]{
 	JSConstructor: "js.funcs.Artist",
-	GetJSArgs: func(obj interface{}) []interface{} {
-		artist := obj.(*Artist)
-		return []interface{}{artist.Name}
+	GetJSArgs: func(obj *Artist) []interface{} {
+		return []interface{}{obj.Name}
 	},
 }
 
@@ -227,11 +225,10 @@ type StringLike struct {
 	Value string
 }
 
-var StringLikeAdapter = &telepath.ObjectAdapter{
+var StringLikeAdapter = &telepath.ObjectAdapter[*StringLike]{
 	JSConstructor: "js.funcs.StringLike",
-	GetJSArgs: func(obj interface{}) []interface{} {
-		str := obj.(*StringLike)
-		return []interface{}{strings.ToUpper(str.Value)}
+	GetJSArgs: func(obj *StringLike) []interface{} {
+		return []interface{}{strings.ToUpper(obj.Value)}
 	},
 }
 
@@ -271,10 +268,10 @@ type TelepathAdapterGetterStruct struct {
 }
 
 func (m *TelepathAdapterGetterStruct) Adapter() telepath.Adapter {
-	return &telepath.ObjectAdapter{
+	return &telepath.ObjectAdapter[*TelepathAdapterGetterStruct]{
 		JSConstructor: "js.funcs." + m.name,
-		GetJSArgs: func(obj interface{}) []interface{} {
-			return []interface{}{obj.(*TelepathAdapterGetterStruct).name}
+		GetJSArgs: func(obj *TelepathAdapterGetterStruct) []interface{} {
+			return []interface{}{obj.name}
 		},
 	}
 }
