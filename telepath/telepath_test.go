@@ -352,6 +352,7 @@ func TestTelepathUnpack(t *testing.T) {
 	}
 
 	vm.Set("testData", string(resultJSON))
+
 	_, err = vm.RunString(`testData = JSON.parse(testData);`)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
@@ -425,6 +426,143 @@ func TestTelepathUnpack(t *testing.T) {
 	}
 
 	artist2Name, err := vm.RunString(`data.artists[1].name`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if artist2Name.String() != "Artist 2" {
+		t.Errorf("Expected Artist 2, got %v", artist2Name.String())
+	}
+}
+
+func TestReadmeExample(t *testing.T) {
+	const albumJS = `class Album {
+	constructor(name, artists) {
+		this.name = name;
+		this.artists = artists;
+	}
+}
+
+class Artist {
+	constructor(name) {
+		this.name = name;
+	}
+}
+
+// If you haven't already instantiated the telepath object
+// window.telepath = new Telepath();
+
+TELEPATH.register("js.funcs.Album", Album);
+TELEPATH.register("js.funcs.Artist", Artist);
+
+// Now you can use the go values
+
+// Lets assume they are stored in a variable called 'telepathJSON'
+var telepathValue = JSON.parse(telepathJSON);
+
+var album = TELEPATH.unpack(telepathValue);`
+
+	var album = &Album{
+		Name: "Hello",
+		Artists: []*Artist{
+			{Name: "Artist 1"},
+			{Name: "Artist 2"},
+		},
+	}
+
+	telepath.Register(
+		AlbumAdapter, &Album{},
+	)
+	telepath.Register(
+		ArtistAdapter, &Artist{},
+	)
+
+	var ctx = telepath.NewContext()
+	var result, err = ctx.Pack(album)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	var resultJSON, _ = json.Marshal(result)
+
+	vm := goja.New()
+	_, err = vm.RunString(telepath_js)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	vm.Set("telepathJSON", string(resultJSON))
+
+	_, err = vm.RunString(albumJS)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	isData, err := vm.RunString(`album instanceof Album`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if !isData.ToBoolean() {
+		t.Errorf("Expected true, got %v", isData.ToBoolean())
+	}
+
+	name, err := vm.RunString(`album.name`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if name.String() != "Hello" {
+		t.Errorf("Expected Hello, got %v", name.String())
+	}
+
+	isArtists, err := vm.RunString(`album.artists instanceof Array`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if !isArtists.ToBoolean() {
+		t.Errorf("Expected true, got %v", isArtists.ToBoolean())
+	}
+
+	isArtist1, err := vm.RunString(`album.artists[0] instanceof Artist`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if !isArtist1.ToBoolean() {
+		t.Errorf("Expected true, got %v", isArtist1.ToBoolean())
+	}
+
+	artist1Name, err := vm.RunString(`album.artists[0].name`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if artist1Name.String() != "Artist 1" {
+		t.Errorf("Expected Artist 1, got %v", artist1Name.String())
+	}
+
+	isArtist2, err := vm.RunString(`album.artists[1] instanceof Artist`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if !isArtist2.ToBoolean() {
+		t.Errorf("Expected true, got %v", isArtist2.ToBoolean())
+	}
+
+	artist2Name, err := vm.RunString(`album.artists[1].name`)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
