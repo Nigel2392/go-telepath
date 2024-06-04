@@ -8,7 +8,7 @@ Library based on [Telepath](https://github.com/wagtail/telepath) for Wagtail.
 ## Installation
 
 ```bash
-go get github.com/Nigel2392/go-telepath@v0.0.3
+go get github.com/Nigel2392/go-telepath@v0.0.4
 ```
 
 ## Usage
