@@ -34,11 +34,14 @@ func SliceAdapter() *SliceTelepathAdapter {
 func (m *SliceTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 
 	var (
-		rTyp = reflect.TypeOf(value)
 		rVal = reflect.ValueOf(value)
 	)
 
-	if rTyp.Kind() != reflect.Slice {
+	if !rVal.IsValid() {
+		return NullNode(), nil
+	}
+
+	if reflect.TypeOf(value).Kind() != reflect.Slice {
 		return nil, fmt.Errorf("value is not a slice")
 	}
 
@@ -68,11 +71,15 @@ func MapAdapter() *MapTelepathAdapter {
 
 func (m *MapTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 	var (
-		rTyp  = reflect.TypeOf(value)
 		rVal  = reflect.ValueOf(value)
 		nodes = make(map[string]Node)
 	)
 
+	if !rVal.IsValid() {
+		return NullNode(), nil
+	}
+
+	var rTyp = reflect.TypeOf(value)
 	if rTyp.Kind() != reflect.Map {
 		return nil, fmt.Errorf("value is not a map: %v", rTyp.Kind())
 	}
@@ -100,8 +107,11 @@ func AutoAdapter() *AutoTelepathAdapter {
 }
 
 func (m *AutoTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
-	var rTyp = reflect.TypeOf(value)
 	var rVal = reflect.ValueOf(value)
+	if !rVal.IsValid() {
+		return NullNode(), nil
+	}
+	var rTyp = reflect.TypeOf(value)
 	switch rTyp.Kind() {
 	case reflect.String:
 		return NewStringNode(value), nil

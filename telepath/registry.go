@@ -142,6 +142,10 @@ func (r *AdapterRegistry) Register(a any, forType ...interface{}) {
 
 func (r *AdapterRegistry) Find(value interface{}) (Adapter, bool) {
 
+	if value == nil {
+		return nil, false
+	}
+
 	if getter, ok := value.(AdapterGetter); ok {
 		var a = getter.Adapter()
 		if a != nil {
@@ -152,9 +156,13 @@ func (r *AdapterRegistry) Find(value interface{}) (Adapter, bool) {
 	var (
 		v = reflect.ValueOf(value)
 		k = v.Kind()
-		t = v.Type()
 	)
 
+	if k == reflect.Invalid {
+		return nil, false
+	}
+
+	var t = v.Type()
 	if _, ok := r.adapters[k]; ok {
 		if a, ok := r.adapters[k][t]; ok {
 			return a, true

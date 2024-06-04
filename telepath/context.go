@@ -63,6 +63,10 @@ func (c *ValueContext) buildNewNode(value interface{}) (Node, error) {
 
 	var v = reflect.ValueOf(value)
 
+	if !v.IsValid() {
+		return NullNode(), nil
+	}
+
 	switch v.Type().Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
@@ -77,7 +81,7 @@ func (c *ValueContext) buildNewNode(value interface{}) (Node, error) {
 		return StringAdapter().BuildNode(value, c)
 	}
 
-	return nil, fmt.Errorf("no adapter found for value %v", value)
+	return nil, fmt.Errorf("no adapter found for value %v (%T)", value, value)
 }
 
 func (c *ValueContext) BuildNode(value interface{}) (Node, error) {

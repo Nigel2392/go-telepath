@@ -123,6 +123,16 @@ func (m *StringNode) EmitCompact() any {
 	return m.GetValue()
 }
 
+type nullNode struct {
+	*TelepathValueNode
+}
+
+func NullNode() *nullNode {
+	return &nullNode{
+		TelepathValueNode: NewTelepathValueNode(nil),
+	}
+}
+
 type ObjectNode struct {
 	*TelepathValueNode
 	Constructor string
