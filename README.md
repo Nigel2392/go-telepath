@@ -6,7 +6,7 @@ A simple library to easily communicate your go values to javascript.
 ## Installation
 
 ```bash
-go get github.com/Nigel2392/go-telepath
+go get github.com/Nigel2392/go-telepath@v0.0.3
 ```
 
 ## Usage
