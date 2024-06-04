@@ -1,5 +1,8 @@
 /* eslint-disable dot-notation, no-param-reassign */
 
+// Huge thanks to https://github.com/wagtail/telepath-unpack for the original implementation of this code.
+// Mainly to Matt Westcott @gasman for writing it.
+
 class Telepath {
 	constructors: {[key: string]: any};
 
