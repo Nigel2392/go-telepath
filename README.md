@@ -3,6 +3,8 @@ GO-Telepath
 
 A simple library to easily communicate your go values to javascript.
 
+Library based on [Telepath](https://github.com/wagtail/telepath) for Wagtail.
+
 ## Installation
 
 ```bash
