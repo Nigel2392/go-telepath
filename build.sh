@@ -1,0 +1,1 @@
+tsc --target "ES6" -m es6 -d -lib es6

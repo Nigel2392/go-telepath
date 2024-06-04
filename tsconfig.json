@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+      "noImplicitAny": true,
+      "module": "ES6",
+      "target": "ES6",
+      "allowJs": true,
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+    },
+    "include": [
+      "telepath/static/**/*.js",
+      "telepath/static/**/*.ts",
+      "telepath/static/**/*.tsx"
+, "telepath/static/telepath.js"    ],
+    "exclude": [
+      "node_modules",
+      "telepath/static/**/*.test.js",
+      "telepath/static/**/*.test.ts",
+      "telepath/static/**/*.test.tsx",
+      "telepath/static/**/*.excluded.js"
+    ]
+}
