@@ -45,8 +45,8 @@ type Artist struct {
 }
 
 func main() {
-	telepath.Register(AlbumAdapter, &Album{})
-	telepath.Register(ArtistAdapter, &Artist{})
+    telepath.Register(AlbumAdapter, &Album{})
+    telepath.Register(ArtistAdapter, &Artist{})
 
     album := &Album{
         Name: "The Dark Side of the Moon",
