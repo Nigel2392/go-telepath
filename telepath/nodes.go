@@ -24,6 +24,7 @@ func (m *TelepathNode) GetValue() interface{} {
 
 func (m *TelepathNode) SetID(id int) {
 	m.ID = id
+	m.UseIdentifier = true
 }
 
 func (m *TelepathNode) GetID() int {
@@ -100,12 +101,12 @@ func NewStringNode(value interface{}) *StringNode {
 }
 
 func (m *StringNode) Emit() any {
-	if m.UseID() {
+	if m.UseID() && m.ID != 0 {
 		return TelepathValue{Ref: m.ID}
 	}
 
 	m.Seen = true
-	if m.UseID() && m.ID != 0 {
+	if m.ID != 0 {
 		var result = m.EmitVerbose()
 		result.ID = m.ID
 		return result
@@ -136,8 +137,29 @@ func NewObjectNode(constructor string, args []Node) *ObjectNode {
 	}
 }
 
+func (m *ObjectNode) SetID(id int) {
+	m.ID = id
+	m.UseIdentifier = true
+}
+
+func (m *ObjectNode) UseID() bool {
+	return m.ID != 0 && m.Seen
+}
+
 func (m *ObjectNode) Emit() any {
-	return m.EmitVerbose()
+	if m.UseID() {
+		return TelepathValue{Ref: m.ID}
+	}
+
+	m.Seen = true
+
+	if m.ID != 0 {
+		var result = m.EmitVerbose()
+		result.ID = m.ID
+		return result
+	}
+
+	return m.EmitCompact()
 }
 
 func (m *ObjectNode) EmitVerbose() TelepathValue {
@@ -159,6 +181,14 @@ type DictNode struct {
 	*TelepathValueNode
 }
 
+func (m *DictNode) UseID() bool {
+	return m.ID != 0 && m.UseIdentifier
+}
+
+func (m *DictNode) SetID(id int) {
+	m.ID = id
+	m.UseIdentifier = true
+}
 func NewDictNode(value map[string]Node) *DictNode {
 	return &DictNode{
 		TelepathValueNode: NewTelepathValueNode(value),
@@ -171,7 +201,7 @@ func (m *DictNode) Emit() any {
 	}
 
 	m.Seen = true
-	if m.UseID() && m.ID != 0 {
+	if m.ID != 0 {
 		var result = m.EmitVerbose()
 		result.ID = m.ID
 		return result
@@ -225,7 +255,26 @@ func (m *ListNode) GetValue() interface{} {
 }
 
 func (m *ListNode) Emit() any {
-	return m.EmitVerbose()
+	if m.UseID() {
+		return TelepathValue{Ref: m.ID}
+	}
+
+	m.Seen = true
+
+	var result = m.EmitVerbose()
+	if m.ID != 0 {
+		result.ID = m.ID
+	}
+	return result
+}
+
+func (m *ListNode) UseID() bool {
+	return m.ID != 0 && m.Seen
+}
+
+func (m *ListNode) SetID(id int) {
+	m.ID = id
+	m.UseIdentifier = true
 }
 
 func (m *ListNode) EmitVerbose() TelepathValue {

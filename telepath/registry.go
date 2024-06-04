@@ -133,6 +133,7 @@ func (r *AdapterRegistry) Register(a any, forType ...interface{}) {
 
 	r.RegisterAdapter(k, t, adapter)
 
+	// If the type is a pointer, register the adapter for the underlying type as well
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 		r.RegisterAdapter(t.Kind(), t, adapter)
@@ -148,9 +149,11 @@ func (r *AdapterRegistry) Find(value interface{}) (Adapter, bool) {
 		}
 	}
 
-	var v = reflect.ValueOf(value)
-	var k = v.Kind()
-	var t = v.Type()
+	var (
+		v = reflect.ValueOf(value)
+		k = v.Kind()
+		t = v.Type()
+	)
 
 	if _, ok := r.adapters[k]; ok {
 		if a, ok := r.adapters[k][t]; ok {

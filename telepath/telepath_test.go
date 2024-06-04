@@ -185,8 +185,6 @@ func TestPacking(t *testing.T) {
 			},
 		}
 
-		telepath.Register(ArtistAdapter, &Artist{})
-
 		var ctx = telepath.NewContext()
 		var result, err = ctx.Pack(object)
 		if err != nil {
@@ -202,7 +200,6 @@ func TestPacking(t *testing.T) {
 		if chk.Args[0] != "Hello" {
 			t.Errorf("Expected Hello, got %v", chk.Args[0])
 		}
-
 		if chk.Args[1].(telepath.TelepathValue).List[0].(telepath.TelepathValue).Type != "js.funcs.Artist" {
 			t.Errorf("Expected js.funcs.Artist, got %v", chk.Args[1].(telepath.TelepathValue).List[0].(telepath.TelepathValue).Type)
 		}
@@ -218,6 +215,111 @@ func TestPacking(t *testing.T) {
 		if chk.Args[1].(telepath.TelepathValue).List[1].(telepath.TelepathValue).Args[0] != "Artist 2" {
 			t.Errorf("Expected Artist 2, got %v", chk.Args[1].(telepath.TelepathValue).List[1].(telepath.TelepathValue).Args[0])
 		}
+	})
+
+	t.Run("TestObjectRefs", func(t *testing.T) {
+		var artist = &Artist{Name: "Artist"}
+		var object1 = &Album{
+			Artists: []*Artist{
+				artist,
+			},
+		}
+		var object2 = &Album{
+			Artists: []*Artist{
+				artist,
+			},
+		}
+
+		var ctx = telepath.NewContext()
+		var result, err = ctx.Pack([]*Album{object1, object2})
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+			return
+		}
+
+		var chk = result.(telepath.TelepathValue)
+		if chk.List == nil {
+			t.Errorf("Expected list, got nil")
+			return
+		}
+
+		var album1 = chk.List[0].(telepath.TelepathValue)
+		var album2 = chk.List[1].(telepath.TelepathValue)
+
+		var artist1 = album1.Args[1].(telepath.TelepathValue).List[0].(telepath.TelepathValue)
+		var artist2 = album2.Args[1].(telepath.TelepathValue).List[0].(telepath.TelepathValue)
+
+		if artist1.ID != 1 {
+			t.Errorf("Expected 1, got %v", artist1.ID)
+			return
+		}
+
+		if artist1.Ref != 0 {
+			t.Errorf("Expected 0, got %v", artist1.Ref)
+			return
+		}
+
+		if artist2.Ref != 1 {
+			t.Errorf("Expected 1, got %v (%T)", artist2.Ref, artist2.Ref)
+			return
+		}
+
+		t.Run("TestJS", func(t *testing.T) {
+			var vm = goja.New()
+			_, err = vm.RunString(telepath_js)
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+				return
+			}
+
+			_, err = vm.RunString(vm_js)
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+				return
+			}
+
+			var jsonData, err = json.Marshal(result)
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+				return
+			}
+			vm.Set("testData", string(jsonData))
+
+			_, err = vm.RunString(`testData = TELEPATH.unpack(
+				JSON.parse(testData)
+			);`)
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+				return
+			}
+
+			isArray, err := vm.RunString(`testData instanceof Array`)
+			if err != nil {
+				t.Errorf("Expected no error, got %v", err)
+				return
+			}
+
+			if !isArray.ToBoolean() {
+				t.Errorf("Expected true, got %v", isArray.ToBoolean())
+				return
+			}
+
+			var album1 = vm.Get("testData").ToObject(vm).Get("0").ToObject(vm)
+			var album2 = vm.Get("testData").ToObject(vm).Get("1").ToObject(vm)
+
+			var artist1 = album1.Get("artists").ToObject(vm).Get("0").ToObject(vm)
+			var artist2 = album2.Get("artists").ToObject(vm).Get("0").ToObject(vm)
+
+			if artist1.Get("name").ToString().String() != "Artist" {
+				t.Errorf("Expected Artist, got %v", artist1.Get("name").ToString())
+				return
+			}
+
+			if artist2.Get("name").ToString().String() != "Artist" {
+				t.Errorf("Expected Artist, got %v", artist2.Get("name").ToString())
+				return
+			}
+		})
 	})
 }
 

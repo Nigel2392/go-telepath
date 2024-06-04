@@ -32,8 +32,8 @@ func (c *JSContext) Pack(value interface{}) (interface{}, error) {
 type ValueContext struct {
 	ParentContext   *JSContext
 	AdapterRegistry *AdapterRegistry
-	RawValues       map[uintptr]any
 	Nodes           map[uintptr]Node
+	RawValues       map[uintptr]interface{} // keep reference to prevent GC
 	NextID          int
 }
 
@@ -41,8 +41,8 @@ func NewValueContext(c *JSContext) *ValueContext {
 	return &ValueContext{
 		ParentContext:   c,
 		AdapterRegistry: c.Registry(),
-		RawValues:       make(map[uintptr]any),
 		Nodes:           make(map[uintptr]Node),
+		RawValues:       make(map[uintptr]interface{}),
 	}
 }
 
@@ -62,9 +62,8 @@ func (c *ValueContext) buildNewNode(value interface{}) (Node, error) {
 	}
 
 	var v = reflect.ValueOf(value)
-	var rTyp = v.Type()
 
-	switch rTyp.Kind() {
+	switch v.Type().Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64, reflect.Bool, reflect.Invalid:
@@ -82,9 +81,33 @@ func (c *ValueContext) buildNewNode(value interface{}) (Node, error) {
 }
 
 func (c *ValueContext) BuildNode(value interface{}) (Node, error) {
-	var node, err = c.buildNewNode(value)
-	if err != nil {
-		return nil, err
+	var (
+		rVal   = reflect.ValueOf(value)
+		node   Node
+		objKey uintptr
+		ok     bool
+	)
+
+	switch rVal.Kind() {
+	case reflect.Ptr, reflect.Slice, reflect.Map:
+		objKey = rVal.Pointer()
+	}
+
+	if node, ok = c.Nodes[objKey]; !ok {
+		node, err := c.buildNewNode(value)
+		if err != nil {
+			return nil, err
+		}
+		if objKey != 0 {
+			c.Nodes[objKey] = node
+			c.RawValues[objKey] = value
+		}
+		return node, nil
+	}
+
+	if node.GetID() == 0 {
+		c.NextID++
+		node.SetID(c.NextID)
 	}
 
 	return node, nil

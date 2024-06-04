@@ -44,8 +44,8 @@ type Context interface {
 
 type Media interface {
 	Merge(other Media) Media
-	JS() []template.HTML
 	CSS() []template.HTML
+	JS() []template.HTML
 }
 
 // If this node is assigned an id, emit() should return the verbose representation with the
@@ -67,7 +67,9 @@ type PrimitiveNodeValue interface {
 	constraints.Integer | constraints.Float | bool
 }
 
-var GlobalRegistry = NewAdapterRegistry()
-var NewContext = GlobalRegistry.Context
-var Register = GlobalRegistry.Register
-var Find = GlobalRegistry.Find
+var (
+	GlobalRegistry = NewAdapterRegistry()
+	NewContext     = GlobalRegistry.Context
+	Register       = GlobalRegistry.Register
+	Find           = GlobalRegistry.Find
+)
