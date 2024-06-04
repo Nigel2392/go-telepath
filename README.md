@@ -63,7 +63,7 @@ func main() {
         log.Fatal(err)
     }
 
-    b, err := json.Marshal(telepathValue)
+    b, err := json.Marshal(result)
     if err != nil {
         log.Fatal(err)
     }
