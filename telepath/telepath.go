@@ -68,8 +68,9 @@ type PrimitiveNodeValue interface {
 }
 
 var (
-	GlobalRegistry = NewAdapterRegistry()
-	NewContext     = GlobalRegistry.Context
-	Register       = GlobalRegistry.Register
-	Find           = GlobalRegistry.Find
+	GlobalRegistry    = NewAdapterRegistry()
+	NewContext        = GlobalRegistry.Context
+	Register          = GlobalRegistry.Register
+	RegisterInterface = GlobalRegistry.RegisterInterfaceAdapter
+	Find              = GlobalRegistry.Find
 )

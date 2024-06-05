@@ -100,6 +100,16 @@ func (m *MapTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 	return NewDictNode(nodes), nil
 }
 
+type ErrorTelepathAdapter struct{}
+
+func ErrorAdapter() *ErrorTelepathAdapter {
+	return &ErrorTelepathAdapter{}
+}
+
+func (m *ErrorTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+	return NewErrorNode(value.(error)), nil
+}
+
 type AutoTelepathAdapter struct{}
 
 func AutoAdapter() *AutoTelepathAdapter {

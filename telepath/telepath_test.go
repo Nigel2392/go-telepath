@@ -34,13 +34,30 @@ type Artist struct {
 	Name string
 }
 
-type TelepathEncoder struct {
-	json.Encoder
+type Namer interface {
+	Name() (string, error)
+}
+
+type iFaceStruct struct {
+	name string
+}
+
+func (m *iFaceStruct) Name() (string, error) {
+	return m.name, nil
+}
+
+var namerAdapter = &telepath.ObjectAdapter[Namer]{
+	JSConstructor: "js.funcs.Namer",
+	GetJSArgs: func(obj Namer) []interface{} {
+		name, _ := obj.Name()
+		return []interface{}{name}
+	},
 }
 
 func TestPacking(t *testing.T) {
 	telepath.Register(AlbumAdapter, &Album{})
 	telepath.Register(ArtistAdapter, &Artist{})
+	telepath.RegisterInterface((*Namer)(nil), namerAdapter)
 
 	t.Run("TestPackObject", func(t *testing.T) {
 		var object = &Album{Name: "Hello"}
@@ -320,6 +337,30 @@ func TestPacking(t *testing.T) {
 				return
 			}
 		})
+	})
+
+	t.Run("TestIFacePacking", func(t *testing.T) {
+		var object = &iFaceStruct{
+			name: "Hello",
+		}
+
+		var ctx = telepath.NewContext()
+		var result, err = ctx.Pack(object)
+		if err != nil {
+			t.Errorf("Expected no error, got %v", err)
+			return
+		}
+
+		var chk = result.(telepath.TelepathValue)
+		if chk.Type != "js.funcs.Namer" {
+			t.Errorf("Expected js.funcs.Namer, got %v", chk.Type)
+			return
+		}
+
+		if chk.Args[0] != "Hello" {
+			t.Errorf("Expected Hello, got %v", chk.Args[0])
+			return
+		}
 	})
 }
 

@@ -2,13 +2,14 @@ package telepath
 
 import "encoding/json"
 
-func PackJSON(ctx *JSContext, value interface{}) ([]byte, error) {
-	var newCtx = NewValueContext(ctx)
-	var v, err = newCtx.BuildNode(value)
+func PackJSON(ctx *JSContext, value interface{}) (string, error) {
+	newCtx := NewValueContext(ctx)
+	v, err := newCtx.BuildNode(value)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return json.Marshal(
+	b, err := json.Marshal(
 		v.Emit(),
 	)
+	return string(b), err
 }

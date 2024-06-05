@@ -84,12 +84,14 @@ func init() {
 type AdapterRegistry struct {
 	adapters map[reflect.Kind]map[reflect.Type]Adapter
 	defaults map[reflect.Kind]Adapter
+	iFaces   map[reflect.Type]Adapter
 }
 
 func NewAdapterRegistry() *AdapterRegistry {
 	return &AdapterRegistry{
 		adapters: specificAdapterMap,
 		defaults: defaultAdapterMap,
+		iFaces:   make(map[reflect.Type]Adapter),
 	}
 }
 
@@ -103,6 +105,20 @@ func (r *AdapterRegistry) RegisterAdapter(k reflect.Kind, t reflect.Type, a Adap
 
 func (r *AdapterRegistry) RegisterDefaultAdapter(k reflect.Kind, a Adapter) {
 	r.defaults[k] = a
+}
+
+func (r *AdapterRegistry) RegisterInterfaceAdapter(i any, a Adapter) {
+	var t = reflect.TypeOf(i)
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if t.Kind() != reflect.Interface {
+		panic("RegisterInterfaceAdapter: i must be an interface")
+	}
+
+	r.iFaces[t] = a
 }
 
 func (r *AdapterRegistry) Context() *JSContext {
@@ -163,6 +179,12 @@ func (r *AdapterRegistry) Find(value interface{}) (Adapter, bool) {
 	}
 
 	var t = v.Type()
+	for k, a := range r.iFaces {
+		if t.Implements(k) {
+			return a, true
+		}
+	}
+
 	if _, ok := r.adapters[k]; ok {
 		if a, ok := r.adapters[k][t]; ok {
 			return a, true

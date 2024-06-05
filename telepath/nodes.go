@@ -1,6 +1,7 @@
 package telepath
 
 import (
+	"reflect"
 	"slices"
 )
 
@@ -91,7 +92,8 @@ type StringNode struct {
 }
 
 func (m *StringNode) UseID() bool {
-	return len(m.GetValue().(string)) >= STRING_REF_MIN_LENGTH
+	var rVal = reflect.ValueOf(m.GetValue())
+	return rVal.Len() >= STRING_REF_MIN_LENGTH && m.ID != 0 && m.Seen
 }
 
 func NewStringNode(value interface{}) *StringNode {
@@ -131,6 +133,39 @@ func NullNode() *nullNode {
 	return &nullNode{
 		TelepathValueNode: NewTelepathValueNode(nil),
 	}
+}
+
+type ErrorNode struct {
+	*TelepathValueNode
+}
+
+func NewErrorNode(value error) *ErrorNode {
+	return &ErrorNode{
+		TelepathValueNode: NewTelepathValueNode(value),
+	}
+}
+
+func (m *ErrorNode) Emit() any {
+	if m.UseID() {
+		return TelepathValue{Ref: m.ID}
+	}
+
+	m.Seen = true
+	if m.ID != 0 {
+		var result = m.EmitVerbose()
+		result.ID = m.ID
+		return result
+	}
+
+	return m.EmitCompact()
+}
+
+func (m *ErrorNode) EmitVerbose() TelepathValue {
+	return TelepathValue{Val: m.GetValue().(error).Error()}
+}
+
+func (m *ErrorNode) EmitCompact() any {
+	return m.GetValue().(error).Error()
 }
 
 type ObjectNode struct {
