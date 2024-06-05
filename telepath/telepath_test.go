@@ -46,7 +46,7 @@ func (m *iFaceStruct) Name() (string, error) {
 	return m.name, nil
 }
 
-var namerAdapter = &telepath.ObjectAdapter[Namer]{
+var NamerAdapter = &telepath.ObjectAdapter[Namer]{
 	JSConstructor: "js.funcs.Namer",
 	GetJSArgs: func(obj Namer) []interface{} {
 		name, _ := obj.Name()
@@ -57,7 +57,7 @@ var namerAdapter = &telepath.ObjectAdapter[Namer]{
 func TestPacking(t *testing.T) {
 	telepath.Register(AlbumAdapter, &Album{})
 	telepath.Register(ArtistAdapter, &Artist{})
-	telepath.RegisterInterface((*Namer)(nil), namerAdapter)
+	telepath.RegisterInterface(NamerAdapter, (*Namer)(nil))
 
 	t.Run("TestPackObject", func(t *testing.T) {
 		var object = &Album{Name: "Hello"}

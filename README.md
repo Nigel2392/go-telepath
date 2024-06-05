@@ -17,6 +17,16 @@ First we must define an adapter.
 
 An adapter is an object used to serialize and deserialize go values to javascript.
 
+We will also define an adapter for pure interface types.
+
+These types are checked in the following order:
+
+1. Check for the type in the registry itself. It will not check for interfaces.
+
+2. Check for the type in the interfaces registry.
+
+3. Check for the type in the defaults registry.
+
 ```go
 var AlbumAdapter = &telepath.ObjectAdapter[*Album]{
 	JSConstructor: "js.funcs.Album",
@@ -32,6 +42,21 @@ var ArtistAdapter = &telepath.ObjectAdapter[*Artist]{
 	},
 }
 
+type Namer interface {
+	GetName() string
+}
+
+var NamerAdapter = &telepath.ObjectAdapter[Namer]{
+	GetJSArgs: func(obj Namer) []interface{} {
+		return []interface{}{obj.GetName()}
+	},
+}
+```
+
+Then we must register the adapters.
+
+```go
+
 type Album struct {
 	Name    string
 	Artists []*Artist
@@ -41,9 +66,16 @@ type Artist struct {
 	Name string
 }
 
+func (a *Artist) GetName() string {
+	return a.Name
+}
+
 func main() {
 	telepath.Register(AlbumAdapter, &Album{})
 	telepath.Register(ArtistAdapter, &Artist{})
+	// Register the interface
+	// It will not be used unless you remove the ArtistAdapter
+	telepath.RegisterInterface(NamerAdapter, (*Namer)(nil))
 
 	album := &Album{
 		Name: "The Dark Side of the Moon",

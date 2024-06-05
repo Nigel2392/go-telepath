@@ -7,6 +7,7 @@ import (
 var (
 	specificAdapterMap = make(map[reflect.Kind]map[reflect.Type]Adapter)
 	defaultAdapterMap  = make(map[reflect.Kind]Adapter)
+	iFaceAdapterMap    = make(map[reflect.Type]Adapter)
 )
 
 func init() {
@@ -27,6 +28,9 @@ func init() {
 		rTypString  = reflect.TypeOf(string(""))
 		rTypSlice   = reflect.TypeOf([]interface{}{})
 		rTypMap     = reflect.TypeOf(map[string]interface{}{})
+
+		// Interface types
+		rTypError = reflect.TypeOf((*error)(nil)).Elem()
 	)
 
 	specificAdapterMap[rTypBool.Kind()] = make(map[reflect.Type]Adapter)
@@ -79,6 +83,9 @@ func init() {
 	defaultAdapterMap[rTypString.Kind()] = StringAdapter()
 	defaultAdapterMap[rTypSlice.Kind()] = SliceAdapter()
 	defaultAdapterMap[rTypMap.Kind()] = MapAdapter()
+
+	// Interface adapters
+	iFaceAdapterMap[rTypError] = ErrorAdapter()
 }
 
 type AdapterRegistry struct {
@@ -91,7 +98,7 @@ func NewAdapterRegistry() *AdapterRegistry {
 	return &AdapterRegistry{
 		adapters: specificAdapterMap,
 		defaults: defaultAdapterMap,
-		iFaces:   make(map[reflect.Type]Adapter),
+		iFaces:   iFaceAdapterMap,
 	}
 }
 
@@ -107,7 +114,15 @@ func (r *AdapterRegistry) RegisterDefaultAdapter(k reflect.Kind, a Adapter) {
 	r.defaults[k] = a
 }
 
-func (r *AdapterRegistry) RegisterInterfaceAdapter(i any, a Adapter) {
+func (r *AdapterRegistry) Context() *JSContext {
+	var c = &JSContext{
+		Media:           &nullMedia{},
+		AdapterRegistry: r,
+	}
+	return c
+}
+
+func (r *AdapterRegistry) RegisterInterfaceAdapter(a Adapter, i interface{}) {
 	var t = reflect.TypeOf(i)
 
 	if t.Kind() == reflect.Ptr {
@@ -121,38 +136,36 @@ func (r *AdapterRegistry) RegisterInterfaceAdapter(i any, a Adapter) {
 	r.iFaces[t] = a
 }
 
-func (r *AdapterRegistry) Context() *JSContext {
-	var c = &JSContext{
-		Media:           &nullMedia{},
-		AdapterRegistry: r,
-	}
-	return c
-}
-
-func (r *AdapterRegistry) Register(a any, forType ...interface{}) {
+func (r *AdapterRegistry) Register(adapter any, forType ...interface{}) {
 	var v interface{}
 
 	if len(forType) == 0 {
-		v = a
-	} else {
+		v = adapter
+	} else if len(forType) == 1 {
 		v = forType[0]
+	} else {
+		for _, t := range forType {
+			r.Register(adapter, t)
+		}
+		return
 	}
 
 	if getter, ok := v.(AdapterGetter); ok {
-		a = getter.Adapter()
+		adapter = getter.Adapter()
 	}
 
-	var adapter = a.(Adapter)
+	var (
+		a = adapter.(Adapter)
+		t = reflect.TypeOf(v)
+		k = t.Kind()
+	)
 
-	var t = reflect.TypeOf(v)
-	var k = t.Kind()
-
-	r.RegisterAdapter(k, t, adapter)
+	r.RegisterAdapter(k, t, a)
 
 	// If the type is a pointer, register the adapter for the underlying type as well
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
-		r.RegisterAdapter(t.Kind(), t, adapter)
+		r.RegisterAdapter(t.Kind(), t, a)
 	}
 }
 
@@ -178,25 +191,27 @@ func (r *AdapterRegistry) Find(value interface{}) (Adapter, bool) {
 		return nil, false
 	}
 
-	var t = v.Type()
-	for k, a := range r.iFaces {
-		if t.Implements(k) {
+	var (
+		t     = v.Type()
+		iType reflect.Type
+		a     Adapter
+		ok    bool
+	)
+
+	if _, ok = r.adapters[k]; ok {
+		if a, ok = r.adapters[k][t]; ok {
 			return a, true
 		}
 	}
 
-	if _, ok := r.adapters[k]; ok {
-		if a, ok := r.adapters[k][t]; ok {
-			return a, true
-		} else {
-			if a, ok := r.defaults[k]; ok {
-				return a, true
-			}
-		}
-	} else {
-		if a, ok := r.defaults[k]; ok {
+	for iType, a = range r.iFaces {
+		if t.Implements(iType) {
 			return a, true
 		}
+	}
+
+	if a, ok = r.defaults[k]; ok {
+		return a, true
 	}
 
 	return nil, false
