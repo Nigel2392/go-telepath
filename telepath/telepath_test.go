@@ -723,7 +723,7 @@ func TestPackUUID(t *testing.T) {
 		return
 	}
 
-	if result != uuid.String() {
-		t.Errorf("Expected %v, got %v", uuid.String(), result)
+	if result != uuid {
+		t.Errorf("Expected %v, got %v", uuid, result)
 	}
 }

@@ -89,13 +89,42 @@ func (m *TelepathValueNode) EmitCompact() any {
 	return m.GetValue()
 }
 
-func NewUUIDNode(value interface{}) *StringNode {
+type UUIDNode struct {
+	*TelepathValueNode
+}
+
+func NewUUIDNode(value interface{}) *UUIDNode {
 	var v, ok = value.(uuid.UUID)
 	if !ok {
 		panic("value is not of type google/uuid.UUID")
 	}
 
-	return NewStringNode(v.String())
+	return &UUIDNode{
+		TelepathValueNode: NewTelepathValueNode(v),
+	}
+}
+
+func (m *UUIDNode) Emit() any {
+	if m.UseID() {
+		return TelepathValue{Ref: m.ID}
+	}
+
+	m.Seen = true
+	if m.ID != 0 {
+		var result = m.EmitVerbose()
+		result.ID = m.ID
+		return result
+	}
+
+	return m.EmitCompact()
+}
+
+func (m *UUIDNode) EmitVerbose() TelepathValue {
+	return TelepathValue{Val: m.GetValue()}
+}
+
+func (m *UUIDNode) EmitCompact() any {
+	return m.GetValue()
 }
 
 type StringNode struct {
