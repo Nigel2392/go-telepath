@@ -2,6 +2,8 @@ package telepath
 
 import (
 	"reflect"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -31,6 +33,9 @@ func init() {
 
 		// Interface types
 		rTypError = reflect.TypeOf((*error)(nil)).Elem()
+
+		// Third party types
+		rTypUUID = reflect.TypeOf(uuid.Nil)
 	)
 
 	specificAdapterMap[rTypBool.Kind()] = make(map[reflect.Type]Adapter)
@@ -86,6 +91,10 @@ func init() {
 
 	// Interface adapters
 	iFaceAdapterMap[rTypError] = ErrorAdapter()
+
+	// Third party adapters
+	specificAdapterMap[rTypUUID.Kind()] = make(map[reflect.Type]Adapter)
+	specificAdapterMap[rTypUUID.Kind()][rTypUUID] = UUIDAdapter()
 }
 
 type AdapterRegistry struct {

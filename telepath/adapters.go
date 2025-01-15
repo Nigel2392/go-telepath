@@ -15,6 +15,16 @@ func (m *BaseTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 	return NewTelepathValueNode(value), nil
 }
 
+type UUIDTelepathAdapter struct{}
+
+func UUIDAdapter() *UUIDTelepathAdapter {
+	return &UUIDTelepathAdapter{}
+}
+
+func (m *UUIDTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+	return NewUUIDNode(value), nil
+}
+
 type StringTelepathAdapter struct{}
 
 func StringAdapter() *StringTelepathAdapter {

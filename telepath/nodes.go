@@ -3,6 +3,8 @@ package telepath
 import (
 	"reflect"
 	"slices"
+
+	"github.com/google/uuid"
 )
 
 var _ Node = (*TelepathNode)(nil)
@@ -85,6 +87,15 @@ func (m *TelepathValueNode) EmitVerbose() TelepathValue {
 
 func (m *TelepathValueNode) EmitCompact() any {
 	return m.GetValue()
+}
+
+func NewUUIDNode(value interface{}) *StringNode {
+	var v, ok = value.(uuid.UUID)
+	if !ok {
+		panic("value is not of type google/uuid.UUID")
+	}
+
+	return NewStringNode(v.String())
 }
 
 type StringNode struct {

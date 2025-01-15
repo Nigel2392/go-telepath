@@ -9,6 +9,7 @@ import (
 
 	"github.com/Nigel2392/go-telepath/telepath"
 	"github.com/dop251/goja"
+	"github.com/google/uuid"
 )
 
 var AlbumAdapter = &telepath.ObjectAdapter[*Album]{
@@ -710,5 +711,19 @@ var album = TELEPATH.unpack(telepathValue);`
 
 	if artist2Name.String() != "Artist 2" {
 		t.Errorf("Expected Artist 2, got %v", artist2Name.String())
+	}
+}
+
+func TestPackUUID(t *testing.T) {
+	var ctx = telepath.NewContext()
+	var uuid = uuid.New()
+	var result, err = ctx.Pack(uuid)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if result != uuid.String() {
+		t.Errorf("Expected %v, got %v", uuid.String(), result)
 	}
 }
