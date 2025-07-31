@@ -1,6 +1,7 @@
 package telepath
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 )
@@ -11,7 +12,7 @@ func BaseAdapter() *BaseTelepathAdapter {
 	return &BaseTelepathAdapter{}
 }
 
-func (m *BaseTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *BaseTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	return NewTelepathValueNode(value), nil
 }
 
@@ -21,7 +22,7 @@ func UUIDAdapter() *UUIDTelepathAdapter {
 	return &UUIDTelepathAdapter{}
 }
 
-func (m *UUIDTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *UUIDTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	return NewUUIDNode(value), nil
 }
 
@@ -31,7 +32,7 @@ func StringAdapter() *StringTelepathAdapter {
 	return &StringTelepathAdapter{}
 }
 
-func (m *StringTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *StringTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	return NewStringNode(value), nil
 }
 
@@ -41,7 +42,7 @@ func SliceAdapter() *SliceTelepathAdapter {
 	return &SliceTelepathAdapter{}
 }
 
-func (m *SliceTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *SliceTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 
 	var (
 		rVal = reflect.ValueOf(value)
@@ -59,7 +60,7 @@ func (m *SliceTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 	for i := 0; i < rVal.Len(); i++ {
 		var (
 			item      = rVal.Index(i).Interface()
-			node, err = c.BuildNode(item)
+			node, err = c.BuildNode(ctx, item)
 		)
 
 		if err != nil {
@@ -79,7 +80,7 @@ func MapAdapter() *MapTelepathAdapter {
 	return &MapTelepathAdapter{}
 }
 
-func (m *MapTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *MapTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	var (
 		rVal  = reflect.ValueOf(value)
 		nodes = make(map[string]Node)
@@ -97,7 +98,7 @@ func (m *MapTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 	for _, key := range rVal.MapKeys() {
 		var (
 			item      = rVal.MapIndex(key).Interface()
-			node, err = c.BuildNode(item)
+			node, err = c.BuildNode(ctx, item)
 		)
 
 		if err != nil {
@@ -116,7 +117,7 @@ func ErrorAdapter() *ErrorTelepathAdapter {
 	return &ErrorTelepathAdapter{}
 }
 
-func (m *ErrorTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *ErrorTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	return NewErrorNode(value.(error)), nil
 }
 
@@ -126,7 +127,7 @@ func AutoAdapter() *AutoTelepathAdapter {
 	return &AutoTelepathAdapter{}
 }
 
-func (m *AutoTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
+func (m *AutoTelepathAdapter) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	var rVal = reflect.ValueOf(value)
 	if !rVal.IsValid() {
 		return NullNode(), nil
@@ -140,7 +141,7 @@ func (m *AutoTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 		for i := 0; i < rVal.Len(); i++ {
 			var (
 				item      = rVal.Index(i).Interface()
-				node, err = c.BuildNode(item)
+				node, err = c.BuildNode(ctx, item)
 			)
 			if err != nil {
 				return nil, err
@@ -154,7 +155,7 @@ func (m *AutoTelepathAdapter) BuildNode(value any, c Context) (Node, error) {
 		for _, key := range reflect.ValueOf(value).MapKeys() {
 			var (
 				item      = reflect.ValueOf(value).MapIndex(key).Interface()
-				node, err = c.BuildNode(item)
+				node, err = c.BuildNode(ctx, item)
 			)
 
 			if err != nil {
@@ -199,7 +200,7 @@ func (m *ObjectAdapter[T]) Pack(obj T, context Context) (string, []interface{}) 
 	return m.JSConstructor, m.JSArgs(obj)
 }
 
-func (m *ObjectAdapter[T]) BuildNode(value any, c Context) (Node, error) {
+func (m *ObjectAdapter[T]) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
 	var (
 		vt T
 		ok bool
@@ -210,7 +211,7 @@ func (m *ObjectAdapter[T]) BuildNode(value any, c Context) (Node, error) {
 	var constructor, args = m.Pack(vt, c)
 	var newArgs = make([]Node, 0, len(args))
 	for _, arg := range args {
-		var node, err = c.BuildNode(arg)
+		var node, err = c.BuildNode(ctx, arg)
 		if err != nil {
 			panic(err)
 		}

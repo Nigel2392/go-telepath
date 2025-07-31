@@ -1,6 +1,7 @@
 package telepath
 
 import (
+	"context"
 	"reflect"
 
 	"github.com/google/uuid"
@@ -160,7 +161,7 @@ func (r *AdapterRegistry) Register(adapter any, forType ...interface{}) {
 	}
 
 	if getter, ok := v.(AdapterGetter); ok {
-		adapter = getter.Adapter()
+		adapter = getter.Adapter(context.Background())
 	}
 
 	var (
@@ -178,14 +179,14 @@ func (r *AdapterRegistry) Register(adapter any, forType ...interface{}) {
 	}
 }
 
-func (r *AdapterRegistry) Find(value interface{}) (Adapter, bool) {
+func (r *AdapterRegistry) Find(ctx context.Context, value interface{}) (Adapter, bool) {
 
 	if value == nil {
 		return nil, false
 	}
 
 	if getter, ok := value.(AdapterGetter); ok {
-		var a = getter.Adapter()
+		var a = getter.Adapter(ctx)
 		if a != nil {
 			return a, true
 		}

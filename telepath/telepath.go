@@ -1,6 +1,7 @@
 package telepath
 
 import (
+	"context"
 	"html/template"
 
 	"golang.org/x/exp/constraints"
@@ -29,16 +30,16 @@ type TelepathValue struct {
 }
 
 type AdapterGetter interface {
-	Adapter() Adapter
+	Adapter(ctx context.Context) Adapter
 }
 
 type Adapter interface {
-	BuildNode(value interface{}, context Context) (Node, error)
+	BuildNode(ctx context.Context, value interface{}, context Context) (Node, error)
 }
 
 type Context interface {
 	AddMedia(media Media)
-	BuildNode(value interface{}) (Node, error)
+	BuildNode(ctx context.Context, value interface{}) (Node, error)
 	Registry() *AdapterRegistry
 }
 

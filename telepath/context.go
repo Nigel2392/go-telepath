@@ -1,6 +1,7 @@
 package telepath
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 )
@@ -20,9 +21,9 @@ func (c *JSContext) Registry() *AdapterRegistry {
 	return c.AdapterRegistry
 }
 
-func (c *JSContext) Pack(value interface{}) (interface{}, error) {
+func (c *JSContext) Pack(ctx context.Context, value interface{}) (interface{}, error) {
 	var newCtx = NewValueContext(c)
-	var v, err = newCtx.BuildNode(value)
+	var v, err = newCtx.BuildNode(ctx, value)
 	if err != nil {
 		return nil, err
 	}
@@ -54,11 +55,11 @@ func (c *ValueContext) Registry() *AdapterRegistry {
 	return c.AdapterRegistry
 }
 
-func (c *ValueContext) buildNewNode(value interface{}) (Node, error) {
+func (c *ValueContext) buildNewNode(ctx context.Context, value interface{}) (Node, error) {
 
-	var adapter, ok = c.AdapterRegistry.Find(value)
+	var adapter, ok = c.AdapterRegistry.Find(ctx, value)
 	if ok {
-		return adapter.BuildNode(value, c)
+		return adapter.BuildNode(ctx, value, c)
 	}
 
 	var v = reflect.ValueOf(value)
@@ -71,20 +72,20 @@ func (c *ValueContext) buildNewNode(value interface{}) (Node, error) {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64, reflect.Bool, reflect.Invalid:
-		return BaseAdapter().BuildNode(value, c)
+		return BaseAdapter().BuildNode(ctx, value, c)
 	case reflect.Slice, reflect.Array:
-		var n, err = SliceAdapter().BuildNode(value, c)
+		var n, err = SliceAdapter().BuildNode(ctx, value, c)
 		return n, err
 	case reflect.Map:
-		return MapAdapter().BuildNode(value, c)
+		return MapAdapter().BuildNode(ctx, value, c)
 	case reflect.String:
-		return StringAdapter().BuildNode(value, c)
+		return StringAdapter().BuildNode(ctx, value, c)
 	}
 
 	return nil, fmt.Errorf("no adapter found for value %v (%T)", value, value)
 }
 
-func (c *ValueContext) BuildNode(value interface{}) (Node, error) {
+func (c *ValueContext) BuildNode(ctx context.Context, value interface{}) (Node, error) {
 	var (
 		rVal   = reflect.ValueOf(value)
 		node   Node
@@ -98,7 +99,7 @@ func (c *ValueContext) BuildNode(value interface{}) (Node, error) {
 	}
 
 	if node, ok = c.Nodes[objKey]; !ok {
-		node, err := c.buildNewNode(value)
+		node, err := c.buildNewNode(ctx, value)
 		if err != nil {
 			return nil, err
 		}

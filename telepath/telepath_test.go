@@ -1,6 +1,7 @@
 package telepath_test
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -63,7 +64,7 @@ func TestPacking(t *testing.T) {
 	t.Run("TestPackObject", func(t *testing.T) {
 		var object = &Album{Name: "Hello"}
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack(object)
+		var result, err = ctx.Pack(context.Background(), object)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 		}
@@ -86,7 +87,7 @@ func TestPacking(t *testing.T) {
 		}
 
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack(object)
+		var result, err = ctx.Pack(context.Background(), object)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 			return
@@ -128,7 +129,7 @@ func TestPacking(t *testing.T) {
 		}
 
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack(object)
+		var result, err = ctx.Pack(context.Background(), object)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 			return
@@ -164,7 +165,7 @@ func TestPacking(t *testing.T) {
 		}
 
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack(object)
+		var result, err = ctx.Pack(context.Background(), object)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 			return
@@ -204,7 +205,7 @@ func TestPacking(t *testing.T) {
 		}
 
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack(object)
+		var result, err = ctx.Pack(context.Background(), object)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 			return
@@ -249,7 +250,7 @@ func TestPacking(t *testing.T) {
 		}
 
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack([]*Album{object1, object2})
+		var result, err = ctx.Pack(context.Background(), []*Album{object1, object2})
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 			return
@@ -346,7 +347,7 @@ func TestPacking(t *testing.T) {
 		}
 
 		var ctx = telepath.NewContext()
-		var result, err = ctx.Pack(object)
+		var result, err = ctx.Pack(context.Background(), object)
 		if err != nil {
 			t.Errorf("Expected no error, got %v", err)
 			return
@@ -385,7 +386,7 @@ func TestPackingToString(t *testing.T) {
 	telepath.Register(StringLikeAdapter, &StringLike{})
 
 	var ctx = telepath.NewContext()
-	var result, err = ctx.Pack(value)
+	var result, err = ctx.Pack(context.Background(), value)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
@@ -411,7 +412,7 @@ type TelepathAdapterGetterStruct struct {
 	name string
 }
 
-func (m *TelepathAdapterGetterStruct) Adapter() telepath.Adapter {
+func (m *TelepathAdapterGetterStruct) Adapter(ctx context.Context) telepath.Adapter {
 	return &telepath.ObjectAdapter[*TelepathAdapterGetterStruct]{
 		JSConstructor: "js.funcs." + m.name,
 		GetJSArgs: func(obj *TelepathAdapterGetterStruct) []interface{} {
@@ -426,7 +427,7 @@ func TestAdapterGetter(t *testing.T) {
 	telepath.Register(value)
 
 	var ctx = telepath.NewContext()
-	var result, err = ctx.Pack(value)
+	var result, err = ctx.Pack(context.Background(), value)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
@@ -472,7 +473,7 @@ func TestTelepathUnpack(t *testing.T) {
 		},
 	}
 	var ctx = telepath.NewContext()
-	var result, err = ctx.Pack(value)
+	var result, err = ctx.Pack(context.Background(), value)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
@@ -620,7 +621,7 @@ var album = TELEPATH.unpack(telepathValue);`
 	)
 
 	var ctx = telepath.NewContext()
-	var result, err = ctx.Pack(album)
+	var result, err = ctx.Pack(context.Background(), album)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return
@@ -717,7 +718,7 @@ var album = TELEPATH.unpack(telepathValue);`
 func TestPackUUID(t *testing.T) {
 	var ctx = telepath.NewContext()
 	var uuid = uuid.New()
-	var result, err = ctx.Pack(uuid)
+	var result, err = ctx.Pack(context.Background(), uuid)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 		return

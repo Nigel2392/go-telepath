@@ -1,10 +1,13 @@
 package telepath
 
-import "encoding/json"
+import (
+	"context"
+	"encoding/json"
+)
 
-func PackJSON(ctx *JSContext, value interface{}) (string, error) {
-	newCtx := NewValueContext(ctx)
-	v, err := newCtx.BuildNode(value)
+func PackJSON(ctx context.Context, context *JSContext, value interface{}) (string, error) {
+	newCtx := NewValueContext(context)
+	v, err := newCtx.BuildNode(ctx, value)
 	if err != nil {
 		return "", err
 	}
