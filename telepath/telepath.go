@@ -9,7 +9,7 @@ import (
 	"embed"
 )
 
-//go:embed static/telepath.js
+//go:embed static/telepath/telepath.js
 var TelepathJS embed.FS
 
 var DICT_RESERVED_KEYS = []string{
