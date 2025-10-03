@@ -6,11 +6,11 @@ import (
 
 	"golang.org/x/exp/constraints"
 
-	_ "embed"
+	"embed"
 )
 
 //go:embed static/telepath.js
-var TelepathJS string
+var TelepathJS embed.FS
 
 var DICT_RESERVED_KEYS = []string{
 	"_args",

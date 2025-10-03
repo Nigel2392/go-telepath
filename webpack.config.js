@@ -25,7 +25,7 @@ module.exports = [
     {
         entry: './static_src/telepath.ts',
         output: {
-            'path': path.resolve(__dirname, 'telepath/static/'),
+            'path': path.resolve(__dirname, 'telepath/static/telepath/'),
             'filename': 'telepath.js',
             'library': {
                 name: 'Telepath',
