@@ -443,7 +443,7 @@ func TestAdapterGetter(t *testing.T) {
 	}
 }
 
-//go:embed fixtures/telepath-0.0.3.index.js
+//go:embed fixtures/telepath.js
 var telepath_js string
 
 const (

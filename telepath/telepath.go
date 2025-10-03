@@ -5,7 +5,12 @@ import (
 	"html/template"
 
 	"golang.org/x/exp/constraints"
+
+	_ "embed"
 )
+
+//go:embed static/telepath.js
+var TelepathJS string
 
 var DICT_RESERVED_KEYS = []string{
 	"_args",

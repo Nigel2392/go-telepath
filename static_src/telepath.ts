@@ -149,6 +149,4 @@ class Telepath {
 }
   
   
-export {
-	Telepath,
-};
+export default Telepath;

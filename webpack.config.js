@@ -23,11 +23,17 @@ function baseConfig(rules = []) {
 
 module.exports = [
     {
-        entry: './telepath/static/telepath.ts',
+        entry: './static_src/telepath.ts',
         output: {
             'path': path.resolve(__dirname, 'telepath/static/'),
-            'filename': 'telepath.js'
+            'filename': 'telepath.js',
+            'library': {
+                name: 'Telepath',
+                type: 'umd',
+                export: 'default',
+            },
+            'globalObject': 'this',
         },
-        ...baseConfig(),
-    },
+         ...baseConfig(),
+    }
 ]

@@ -8,15 +8,14 @@
       "esModuleInterop": true,
     },
     "include": [
-      "telepath/static/**/*.js",
-      "telepath/static/**/*.ts",
-      "telepath/static/**/*.tsx"
-, "telepath/static/telepath.js"    ],
+      "static_src/**/*.js",
+      "static_src/**/*.ts",
+      "static_src/**/*.tsx",
+    ],
     "exclude": [
       "node_modules",
-      "telepath/static/**/*.test.js",
-      "telepath/static/**/*.test.ts",
-      "telepath/static/**/*.test.tsx",
-      "telepath/static/**/*.excluded.js"
+      "static_src/**/*.test.js",
+      "static_src/**/*.test.ts",
+      "static_src/**/*.test.tsx",
     ]
 }
