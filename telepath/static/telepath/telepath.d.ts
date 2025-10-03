@@ -14,4 +14,4 @@ declare class Telepath {
         [key: number]: any;
     }): any;
 }
-export { Telepath, };
+export default Telepath;

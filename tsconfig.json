@@ -6,6 +6,9 @@
       "allowJs": true,
       "moduleResolution": "node",
       "esModuleInterop": true,
+      "declaration": true,
+      "emitDeclarationOnly": true,
+      "outDir": "telepath/static/telepath"
     },
     "include": [
       "static_src/**/*.js",

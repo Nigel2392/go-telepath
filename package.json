@@ -4,5 +4,30 @@
     "typescript": "^5.4.5",
     "webpack": "^5.91.0",
     "webpack-cli": "^5.1.4"
-  }
+  },
+  "name": "@nigel2392/go-telepath",
+  "version": "1.2.8",
+  "description": "telepath implementation in TypeScript",
+  "main": "telepath/static/telepath/telepath.js",
+  "types": "telepath/static/telepath/telepath.d.ts",
+  "files": [
+    "telepath/static/telepath/telepath.js",
+    "telepath/static/telepath/telepath.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nigel2392/go-telepath.git"
+  },
+  "scripts": {
+    "build:js": "npx webpack",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir telepath/static/telepath",
+    "build": "npm run build:js && npm run build:types",
+    "prepublishOnly": "npm run build"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Nigel2392/go-telepath/issues"
+  },
+  "homepage": "https://github.com/Nigel2392/go-telepath#readme"
 }

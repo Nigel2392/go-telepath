@@ -1,9 +1,14 @@
-const path = require('path');
+import path from 'path';
 
 const tsLoaderConfig = {
     test: /\.ts$/i,
-    use: 'ts-loader',
-    exclude: '/node_modules/'
+    use: {
+        loader: 'ts-loader',
+        options: {
+            configFile: 'tsconfig.webpack.json'
+        }
+    },
+    exclude: '/node_modules/',
 }
 
 function baseConfig(rules = []) {
@@ -21,11 +26,11 @@ function baseConfig(rules = []) {
     }
 }
 
-module.exports = [
+export default [
     {
         entry: './static_src/telepath.ts',
         output: {
-            'path': path.resolve(__dirname, 'telepath/static/telepath/'),
+            'path': path.resolve('telepath/static/telepath/'),
             'filename': 'telepath.js',
             'library': {
                 name: 'Telepath',
