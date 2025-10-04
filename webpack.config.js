@@ -8,7 +8,7 @@ const tsLoaderConfig = {
             configFile: 'tsconfig.webpack.json'
         }
     },
-    exclude: '/node_modules/',
+    exclude: /node_modules/,
 }
 
 function baseConfig(rules = []) {
@@ -27,18 +27,32 @@ function baseConfig(rules = []) {
 }
 
 export default [
+    // UMD build for browsers
     {
         entry: './static_src/telepath.ts',
         output: {
-            'path': path.resolve('telepath/static/telepath/'),
-            'filename': 'telepath.js',
-            'library': {
+            path: path.resolve('telepath/static/telepath/'),
+            filename: 'telepath.umd.js',
+            library: {
                 name: 'Telepath',
                 type: 'umd',
                 export: 'default',
             },
-            'globalObject': 'this',
+            globalObject: 'this',
         },
-         ...baseConfig(),
-    }
-]
+        ...baseConfig(),
+    },
+    // ESM build for Node
+    {
+        entry: './static_src/telepath.ts',
+        output: {
+            path: path.resolve('telepath/static/telepath/'),
+            filename: 'telepath.js',
+            library: {
+                type: 'module',
+            },
+        },
+        experiments: { outputModule: true },
+        ...baseConfig(),
+    },
+];

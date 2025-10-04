@@ -147,6 +147,6 @@ class Telepath {
 	  return result;
 	}
 }
-  
-  
+
+
 export default Telepath;

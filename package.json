@@ -6,14 +6,22 @@
     "webpack-cli": "^5.1.4"
   },
   "name": "@nigel2392/go-telepath",
-  "version": "1.2.8",
+  "version": "1.3.7",
   "description": "telepath implementation in TypeScript",
   "main": "telepath/static/telepath/telepath.js",
   "types": "telepath/static/telepath/telepath.d.ts",
   "files": [
     "telepath/static/telepath/telepath.js",
+    "telepath/static/telepath/telepath.umd.js",
     "telepath/static/telepath/telepath.d.ts"
   ],
+  "exports": {
+    ".": {
+      "import": "./telepath/static/telepath/telepath.js",
+      "require": "./telepath/static/telepath/telepath.umd.js",
+      "types": "./telepath/static/telepath/telepath.d.ts"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Nigel2392/go-telepath.git"
