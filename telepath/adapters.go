@@ -172,7 +172,7 @@ func (m *AutoTelepathAdapter) BuildNode(ctx context.Context, value any, c Contex
 
 type ObjectAdapter[T any] struct {
 	JSConstructor string
-	GetJSArgs     func(obj T) []interface{}
+	GetJSArgs     func(ctx context.Context, obj T) []interface{}
 }
 
 func NewTelepathAdapter[T any]() *ObjectAdapter[T] {
@@ -183,21 +183,21 @@ func (m *ObjectAdapter[T]) GetMedia(obj interface{}) Media {
 	return &nullMedia{}
 }
 
-func (m *ObjectAdapter[T]) JSArgs(obj T) []interface{} {
+func (m *ObjectAdapter[T]) JSArgs(ctx context.Context, obj T) []interface{} {
 	if m.GetJSArgs != nil {
-		return m.GetJSArgs(obj)
+		return m.GetJSArgs(ctx, obj)
 	} else {
 		return make([]interface{}, 0)
 	}
 }
 
-func (m *ObjectAdapter[T]) Pack(obj T, context Context) (string, []interface{}) {
+func (m *ObjectAdapter[T]) Pack(ctx context.Context, obj T, context Context) (string, []interface{}) {
 
 	context.AddMedia(
 		m.GetMedia(obj),
 	)
 
-	return m.JSConstructor, m.JSArgs(obj)
+	return m.JSConstructor, m.JSArgs(ctx, obj)
 }
 
 func (m *ObjectAdapter[T]) BuildNode(ctx context.Context, value any, c Context) (Node, error) {
@@ -208,7 +208,7 @@ func (m *ObjectAdapter[T]) BuildNode(ctx context.Context, value any, c Context) 
 	if vt, ok = value.(T); !ok {
 		return nil, fmt.Errorf("value is not of type %T", vt)
 	}
-	var constructor, args = m.Pack(vt, c)
+	var constructor, args = m.Pack(ctx, vt, c)
 	var newArgs = make([]Node, 0, len(args))
 	for _, arg := range args {
 		var node, err = c.BuildNode(ctx, arg)

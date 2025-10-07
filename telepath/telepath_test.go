@@ -15,14 +15,14 @@ import (
 
 var AlbumAdapter = &telepath.ObjectAdapter[*Album]{
 	JSConstructor: "js.funcs.Album",
-	GetJSArgs: func(obj *Album) []interface{} {
+	GetJSArgs: func(ctx context.Context, obj *Album) []interface{} {
 		return []interface{}{obj.Name, obj.Artists}
 	},
 }
 
 var ArtistAdapter = &telepath.ObjectAdapter[*Artist]{
 	JSConstructor: "js.funcs.Artist",
-	GetJSArgs: func(obj *Artist) []interface{} {
+	GetJSArgs: func(ctx context.Context, obj *Artist) []interface{} {
 		return []interface{}{obj.Name}
 	},
 }
@@ -50,7 +50,7 @@ func (m *iFaceStruct) Name() (string, error) {
 
 var NamerAdapter = &telepath.ObjectAdapter[Namer]{
 	JSConstructor: "js.funcs.Namer",
-	GetJSArgs: func(obj Namer) []interface{} {
+	GetJSArgs: func(ctx context.Context, obj Namer) []interface{} {
 		name, _ := obj.Name()
 		return []interface{}{name}
 	},
@@ -372,7 +372,7 @@ type StringLike struct {
 
 var StringLikeAdapter = &telepath.ObjectAdapter[*StringLike]{
 	JSConstructor: "js.funcs.StringLike",
-	GetJSArgs: func(obj *StringLike) []interface{} {
+	GetJSArgs: func(ctx context.Context, obj *StringLike) []interface{} {
 		return []interface{}{strings.ToUpper(obj.Value)}
 	},
 }
@@ -415,7 +415,7 @@ type TelepathAdapterGetterStruct struct {
 func (m *TelepathAdapterGetterStruct) Adapter(ctx context.Context) telepath.Adapter {
 	return &telepath.ObjectAdapter[*TelepathAdapterGetterStruct]{
 		JSConstructor: "js.funcs." + m.name,
-		GetJSArgs: func(obj *TelepathAdapterGetterStruct) []interface{} {
+		GetJSArgs: func(ctx context.Context, obj *TelepathAdapterGetterStruct) []interface{} {
 			return []interface{}{obj.name}
 		},
 	}

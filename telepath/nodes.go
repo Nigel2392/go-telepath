@@ -104,6 +104,10 @@ func NewUUIDNode(value interface{}) *UUIDNode {
 	}
 }
 
+func (m *UUIDNode) UseID() bool {
+	return m.ID != 0 && m.Seen
+}
+
 func (m *UUIDNode) Emit() any {
 	if m.UseID() {
 		return TelepathValue{Ref: m.ID}
