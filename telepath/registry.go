@@ -102,6 +102,7 @@ type AdapterRegistry struct {
 	adapters map[reflect.Kind]map[reflect.Type]Adapter
 	defaults map[reflect.Kind]Adapter
 	iFaces   map[reflect.Type]Adapter
+	funcs    []func(ctx context.Context, value interface{}) (Adapter, bool)
 }
 
 func NewAdapterRegistry() *AdapterRegistry {
@@ -118,6 +119,10 @@ func (r *AdapterRegistry) RegisterAdapter(k reflect.Kind, t reflect.Type, a Adap
 	}
 
 	r.adapters[k][t] = a
+}
+
+func (r *AdapterRegistry) RegisterFunc(f func(ctx context.Context, value interface{}) (Adapter, bool)) {
+	r.funcs = append(r.funcs, f)
 }
 
 func (r *AdapterRegistry) RegisterDefaultAdapter(k reflect.Kind, a Adapter) {
@@ -216,6 +221,12 @@ func (r *AdapterRegistry) Find(ctx context.Context, value interface{}) (Adapter,
 
 	for iType, a = range r.iFaces {
 		if t.Implements(iType) {
+			return a, true
+		}
+	}
+
+	for _, fn := range r.funcs {
+		if a, ok = fn(ctx, value); ok {
 			return a, true
 		}
 	}

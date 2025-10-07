@@ -4,8 +4,6 @@ import (
 	"context"
 	"html/template"
 
-	"golang.org/x/exp/constraints"
-
 	"embed"
 )
 
@@ -69,10 +67,6 @@ type Node interface {
 	GetID() int
 }
 
-type PrimitiveNodeValue interface {
-	constraints.Integer | constraints.Float | bool
-}
-
 var (
 	GlobalRegistry    = NewAdapterRegistry()
 	NewContext        = GlobalRegistry.Context
@@ -80,3 +74,14 @@ var (
 	RegisterInterface = GlobalRegistry.RegisterInterfaceAdapter
 	Find              = GlobalRegistry.Find
 )
+
+func RegisterFunc[T any](f func(ctx context.Context, value T) (Adapter, bool)) {
+	GlobalRegistry.RegisterFunc(func(ctx context.Context, value interface{}) (Adapter, bool) {
+		v, ok := value.(T)
+		if !ok {
+			return nil, false
+		}
+
+		return f(ctx, v)
+	})
+}

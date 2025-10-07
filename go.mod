@@ -5,7 +5,6 @@ go 1.21.6
 require (
 	github.com/dop251/goja v0.0.0-20240516125602-ccbae20bcec2
 	github.com/google/uuid v1.6.0
-	golang.org/x/exp v0.0.0-20240531132922-fd00a4e0eefc
 )
 
 require (
