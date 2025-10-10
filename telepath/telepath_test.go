@@ -27,6 +27,13 @@ var ArtistAdapter = &telepath.ObjectAdapter[*Artist]{
 	},
 }
 
+var ListAdapter = &telepath.ObjectAdapter[*List]{
+	JSConstructor: "js.funcs.List",
+	GetJSArgs: func(ctx context.Context, obj *List) []interface{} {
+		return []interface{}{obj.Items, map[string]int{"min": obj.Min, "max": obj.Max}}
+	},
+}
+
 type Album struct {
 	Name    string
 	Artists []*Artist
@@ -34,6 +41,12 @@ type Album struct {
 
 type Artist struct {
 	Name string
+}
+
+type List struct {
+	Items []string
+	Min   int
+	Max   int
 }
 
 type Namer interface {
@@ -59,6 +72,7 @@ var NamerAdapter = &telepath.ObjectAdapter[Namer]{
 func TestPacking(t *testing.T) {
 	telepath.Register(AlbumAdapter, &Album{})
 	telepath.Register(ArtistAdapter, &Artist{})
+	telepath.Register(ListAdapter, &List{})
 	telepath.RegisterInterface(NamerAdapter, (*Namer)(nil))
 
 	t.Run("TestPackObject", func(t *testing.T) {
@@ -460,9 +474,119 @@ class Artist {
 		this.name = name;
 	}
 }
+
+class List {
+	constructor(items, options) {
+		this.items = items;
+		this.min = options.min;
+		this.max = options.max;
+	}
+}
+
+// If you haven't already instantiated the telepath object
+// window.telepath = new Telepath();
 TELEPATH.register("js.funcs.Album", Album);
-TELEPATH.register("js.funcs.Artist", Artist);`
+TELEPATH.register("js.funcs.Artist", Artist);
+TELEPATH.register("js.funcs.List", List);
+`
 )
+
+func TestListPackUnpack(t *testing.T) {
+	var value = &List{
+		Items: []string{"one", "two", "three"},
+		Min:   1,
+		Max:   3,
+	}
+	telepath.Register(
+		ListAdapter, &List{},
+	)
+	var ctx = telepath.NewContext()
+	var result, err = ctx.Pack(context.Background(), value)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	var resultJSON, _ = json.Marshal(result)
+	vm := goja.New()
+	_, err = vm.RunString(telepath_js)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	_, err = vm.RunString(vm_js)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	vm.Set("testData", string(resultJSON))
+	_, err = vm.RunString(`testData = JSON.parse(testData);`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	_, err = vm.RunString(`var data = TELEPATH.unpack(testData);`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	isData, err := vm.RunString(`data instanceof List`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+
+	if !isData.ToBoolean() {
+		t.Errorf("Expected true, got %v", isData.ToBoolean())
+		return
+	}
+
+	min, err := vm.RunString(`data.min`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	if min.ToInteger() != 1 {
+		t.Errorf("Expected 1, got %v", min.ToInteger())
+		return
+	}
+	max, err := vm.RunString(`data.max`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	if max.ToInteger() != 3 {
+		t.Errorf("Expected 3, got %v", max.ToInteger())
+		return
+	}
+	items, err := vm.RunString(`data.items`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	isArray, err := vm.RunString(`data.items instanceof Array`)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+		return
+	}
+	if !isArray.ToBoolean() {
+		t.Errorf("Expected true, got %v", isArray.ToBoolean())
+		return
+	}
+
+	if items.ToObject(vm).Get("0").ToString().String() != "one" {
+		t.Errorf("Expected one, got %v", items.ToObject(vm).Get("0").ToString().String())
+		return
+	}
+	if items.ToObject(vm).Get("1").ToString().String() != "two" {
+		t.Errorf("Expected two, got %v", items.ToObject(vm).Get("1").ToString().String())
+		return
+	}
+	if items.ToObject(vm).Get("2").ToString().String() != "three" {
+		t.Errorf("Expected three, got %v", items.ToObject(vm).Get("2").ToString().String())
+		return
+	}
+}
 
 func TestTelepathUnpack(t *testing.T) {
 	var value = &Album{

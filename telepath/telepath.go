@@ -20,6 +20,14 @@ var DICT_RESERVED_KEYS = []string{
 	"_val",
 }
 
+var _dict_reserved_keys_map = func() map[string]struct{} {
+	var m = make(map[string]struct{}, len(DICT_RESERVED_KEYS))
+	for _, k := range DICT_RESERVED_KEYS {
+		m[k] = struct{}{}
+	}
+	return m
+}()
+
 const STRING_REF_MIN_LENGTH = 20 // Strings shorter than this will not be turned into references
 
 type TelepathValue struct {

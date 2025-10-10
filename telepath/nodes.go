@@ -2,7 +2,6 @@ package telepath
 
 import (
 	"reflect"
-	"slices"
 
 	"github.com/google/uuid"
 )
@@ -79,6 +78,19 @@ func (m *TelepathValueNode) UseID() bool {
 
 func (m *TelepathValueNode) GetValue() interface{} {
 	return m.Value
+}
+
+func (m *TelepathValueNode) Emit() any {
+	if m.UseID() {
+		return TelepathValue{Ref: m.ID}
+	}
+	m.Seen = true
+	if m.ID != 0 {
+		var result = m.EmitVerbose()
+		result.ID = m.ID
+		return result
+	}
+	return m.EmitCompact()
 }
 
 func (m *TelepathValueNode) EmitVerbose() TelepathValue {
@@ -314,9 +326,7 @@ func (m *DictNode) EmitCompact() any {
 	)
 
 	for key := range m.Value.(map[string]Node) {
-		_, hasReservedKey = slices.BinarySearch(
-			DICT_RESERVED_KEYS, key,
-		)
+		_, hasReservedKey = _dict_reserved_keys_map[key]
 		if hasReservedKey {
 			return m.EmitVerbose()
 		}
